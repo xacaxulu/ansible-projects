@@ -1,0 +1,20 @@
+---
+- hosts: all
+  sudo: true
+  tasks:
+    - name: update apt cache
+      apt: update_cache=yes
+    - name: install postgresql
+      apt: name=postgresql state=latest
+    - name: install curl
+      apt: name=curl state=latest
+    - name: register whether rvm installed or not
+      command: /usr/local/rvm/bin/rvm
+      register: rvm_exists
+      changed_when: rvm_exists|failed
+    - name: install rvm gpg key
+      command: gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+      when: rvm_exists|failed
+    - name: install rvm plus rails
+      shell: '\curl -sSL https://get.rvm.io | bash -s stable --rails'
+      when: rvm_exists|failed
